@@ -8,9 +8,9 @@ type ShopServiceRouter struct {
 
 func (p ShopServiceRouter) Actions() []iam.Action {
 	return []iam.Action{
-		{Resources: []iam.Resource{Shop}, Type: iam.Write, Handle: p.service.AddShop, Description: "添加店铺", Codes: AddShopCodes},
-		{Resources: []iam.Resource{Shop}, Type: iam.Write, Handle: p.service.AddShop, Description: "添加店铺"},
-		{Resources: []iam.Resource{Shop.Optional()}, Type: iam.List, Handle: p.service.AddShop, Description: "添加店铺"},
-		{Resources: []iam.Resource{CateGood}, Type: iam.List, Handle: p.service.ListGoods, Description: "获取商品列表"},
+		{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.AddShop, Description: "添加店铺", Codes: AddShopCodes},
+		{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.AddShop, Description: "添加店铺"},
+		{Resources: []iam.Resource{Shop.Optional()}, Type: iam.List, Handler: p.service.AddShop, Description: "添加店铺"},
+		{Resources: []iam.Resource{CateGood}, Type: iam.List, Handler: p.service.ListGoods, Description: "获取商品列表"},
 	}
 }

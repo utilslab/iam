@@ -16,6 +16,13 @@ const (
 	Put    = "PUT"
 )
 
+const (
+	Read  ActionType = "read"
+	Write ActionType = "write"
+	List  ActionType = "list"
+)
+
+type ActionType string
 type Html string
 type Text string
 
@@ -33,15 +40,10 @@ type Register interface {
 }
 
 type Route struct {
-	Path        string
-	Method      string
-	Extra       string
 	Prefix      string
 	Description string
 	Middlewares []gin.HandlerFunc `json:"-"`
-	Children    []Route
-	Handler     interface{} `json:"-"`
-	handler     reflect.Value
+	Groups      []Group
 }
 
 type Router interface {
@@ -105,3 +107,38 @@ type Value struct {
 }
 
 type ContextWrapper func(ctx *gin.Context) (context.Context, error)
+
+type Resource struct {
+	Name        string
+	Ident       string
+	Description string
+	optional    bool
+}
+
+func (r Resource) Optional() Resource {
+	n := r
+	n.optional = true
+	return n
+}
+
+type Group struct {
+	Name    string
+	Prefix  string
+	Middles []gin.HandlerFunc
+	Actions []Action
+}
+
+type Action struct {
+	Type        ActionType
+	Description string
+	Resources   []Resource
+	Codes       []Code
+	Handler     interface{} `json:"-"`
+	handler     reflect.Value
+}
+
+type Code struct {
+	Status  int
+	Code    string
+	Message string
+}

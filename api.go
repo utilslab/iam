@@ -225,6 +225,14 @@ func (p *API) registerRoutes(register Register, prefix string, routes []Route) (
 	return
 }
 
+func (p *API) registerGroups() {
+
+}
+
+func (p *API) registerActions() {
+
+}
+
 func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var out []reflect.Value
