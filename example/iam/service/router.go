@@ -20,9 +20,10 @@ func (p ShopServiceRouter) Actions() iam.Route {
 				Name:   "商品",
 				Prefix: "/good",
 				Actions: []iam.Action{
-					{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.AddShop, Description: "添加店铺", Codes: AddShopCodes},
-					{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.AddShop, Description: "添加店铺"},
-					{Resources: []iam.Resource{Shop.Optional()}, Type: iam.List, Handler: p.service.AddShop, Description: "添加店铺"},
+					// In-> $ShopId, $CateId
+					{Resources: []iam.Resource{Shop,Cate}, Type: iam.Read, Handler: p.service.GetShop, Description: "获取店铺", Codes: AddShopCodes},
+					{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.GetShop, Description: "添加店铺"},
+					{Resources: []iam.Resource{Shop.Optional()}, Type: iam.List, Handler: p.service.GetShop, Description: "添加店铺"},
 				},
 			},
 			{

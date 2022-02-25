@@ -15,7 +15,7 @@ func main() {
 	config.AllowAllOrigins = true
 	
 	engine := gin.Default()
-	engine.Use(cors.New(config))
+	//engine.Use(cors.New(config), auth.Guard())
 	
 	api := iam.New()
 	api.SetVersion("1.0.0")
