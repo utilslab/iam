@@ -15,4 +15,6 @@ type AddShopIn struct {
 }
 
 type AddShopOut struct {
+	ShopId int64
+	CateId int64
 }

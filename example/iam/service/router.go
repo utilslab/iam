@@ -7,30 +7,34 @@ import (
 
 //var _ iam.Service = &ShopServiceRouter{}
 
+func NewShopServiceRouter(service ShopService) *ShopServiceRouter {
+	return &ShopServiceRouter{service: service}
+}
+
 type ShopServiceRouter struct {
 	service ShopService
 }
 
-func (p ShopServiceRouter) Actions() iam.Route {
-	return iam.Route{
-		Prefix:      "/api",
-		Middlewares: []gin.HandlerFunc{},
-		Groups: []iam.Group{
-			{
-				Name:   "商品",
-				Prefix: "/good",
-				Actions: []iam.Action{
-					// In-> $ShopId, $CateId
-					{Resources: []iam.Resource{Shop,Cate}, Type: iam.Read, Handler: p.service.GetShop, Description: "获取店铺", Codes: AddShopCodes},
-					{Resources: []iam.Resource{Shop}, Type: iam.Write, Handler: p.service.GetShop, Description: "添加店铺"},
-					{Resources: []iam.Resource{Shop.Optional()}, Type: iam.List, Handler: p.service.GetShop, Description: "添加店铺"},
+func (p ShopServiceRouter) Routes() []*iam.Route {
+	return []*iam.Route{
+		{
+			Prefix:      "/api",
+			Middlewares: []gin.HandlerFunc{},
+			Groups: []*iam.Group{
+				{
+					Name:   "商品",
+					Prefix: "/good",
+					Actions: []*iam.Action{
+						// In-> $ShopId, $CateId
+						{Resources: []iam.Resource{Shop, Cate}, Type: iam.Read, Handler: p.service.GetShop, Description: "获取店铺", Codes: AddShopCodes},
+					},
 				},
-			},
-			{
-				Name:   "分类商品",
-				Prefix: "/cateGood",
-				Actions: []iam.Action{
-					{Resources: []iam.Resource{CateGood}, Type: iam.List, Handler: p.service.ListGoods, Description: "获取商品列表"},
+				{
+					Name:   "分类商品",
+					Prefix: "/cateGood",
+					Actions: []*iam.Action{
+						{Resources: []iam.Resource{CateGood}, Type: iam.List, Handler: p.service.ListGoods, Description: "获取商品列表"},
+					},
 				},
 			},
 		},

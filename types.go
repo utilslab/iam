@@ -41,13 +41,12 @@ type Register interface {
 
 type Route struct {
 	Prefix      string
-	Description string
 	Middlewares []gin.HandlerFunc `json:"-"`
-	Groups      []Group
+	Groups      []*Group
 }
 
 type Router interface {
-	Routes() []Route
+	Routes() []*Route
 }
 
 type Module struct {
@@ -63,10 +62,7 @@ type HandlerInfo struct {
 	Location string
 }
 
-func (p HandlerInfo) ParsePath(path string) string {
-	if path != "" {
-		return path
-	}
+func (p HandlerInfo) ParsePath() string {
 	return fmt.Sprintf("/%s", p.Name)
 }
 
@@ -122,10 +118,10 @@ func (r Resource) Optional() Resource {
 }
 
 type Group struct {
-	Name    string
-	Prefix  string
-	Middles []gin.HandlerFunc
-	Actions []Action
+	Name        string
+	Prefix      string
+	Middlewares []gin.HandlerFunc
+	Actions     []*Action
 }
 
 type Action struct {
@@ -135,6 +131,9 @@ type Action struct {
 	Codes       []Code
 	Handler     interface{} `json:"-"`
 	handler     reflect.Value
+	group       string
+	method      string
+	path        string
 }
 
 type Code struct {

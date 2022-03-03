@@ -83,15 +83,16 @@ func (p *API) Run(addr string) {
 		p.engine = gin.Default()
 	}
 	var (
-		routes []Route
+		routes []*Route
 		err    error
 	)
 	for _, router := range p.routers {
-		routes, err = p.prepareRoutes(router.Routes())
+		routes = router.Routes()
+		err = p.prepareRoutes(routes)
 		if err != nil {
 			panic(err)
 		}
-		err = p.registerRoutes(p.engine, "", routes)
+		err = p.registerRoutes(p.engine, routes)
 		if err != nil {
 			panic(err)
 			return
@@ -164,73 +165,76 @@ func (p *API) parseHandler(handler interface{}) (v reflect.Value, err error) {
 }
 
 // 预处理路由，反射路由处理器，并检查类型
-func (p *API) prepareRoutes(in []Route) (out []Route, err error) {
-	out = make([]Route, len(in))
-	for i := 0; i < len(in); i++ {
-		out[i] = in[i]
-		if out[i].Handler != nil {
-			out[i].handler, err = p.parseHandler(out[i].Handler)
-			if err != nil {
-				// TODO 标注处理器的文件及行号
-				//err = fmt.Errorf("parse handler '%s' error: %s",in[i].)
-				return
-			}
-			if out[i].Method == "" {
-				out[i].Method = http.MethodPost
+func (p *API) prepareRoutes(routes []*Route) (err error) {
+	// TODO Action 冲突检查
+	for _, route := range routes {
+		for _, group := range route.Groups {
+			for _, action := range group.Actions {
+				err = p.prepareAction(action)
+				if err != nil {
+					return
+				}
 			}
 		}
-		out[i].Children, err = p.prepareRoutes(out[i].Children)
-		if err != nil {
-			return
-		}
+	}
+	return
+}
+
+func (p *API) prepareAction(action *Action) (err error) {
+	switch action.Type {
+	case Read, List:
+		action.method = Get
+	default:
+		action.method = Post
+	}
+	if action.Handler != nil {
+		action.handler, err = p.parseHandler(action.Handler)
+	} else {
+		// TODO 报错，Handler 未定义
+		err = fmt.Errorf("action Handle not defined")
+		return
 	}
 	return
 }
 
 // 递归注册路由树，处理中间件前缀逻辑，代理路由处理器为 Gin 控制器
-func (p *API) registerRoutes(register Register, prefix string, routes []Route) (err error) {
-	for _, v := range routes {
-		if !v.handler.IsValid() {
-			err = p.registerRoutes(
-				register.Group(v.Prefix, v.Middlewares...),
-				strings.Join([]string{prefix, v.Prefix}, ""),
-				v.Children,
-			)
-			if err != nil {
-				return
+func (p *API) registerRoutes(register Register, routes []*Route) (err error) {
+	for _, route := range routes {
+		routeRegister := register
+		if route.Prefix != "" || len(route.Middlewares) > 0 {
+			routeRegister = register.Group(route.Prefix, route.Middlewares...)
+		}
+		for _, group := range route.Groups {
+			groupRegister := routeRegister
+			if group.Prefix != "" || len(group.Middlewares) > 0 {
+				groupRegister = routeRegister.Group(group.Prefix, group.Middlewares...)
 			}
-		} else {
-			info := p.parseHandlerInfo(v.Handler)
-			path := info.ParsePath(v.Path)
-			p.addMethod(v.Method, strings.Join([]string{prefix, path}, ""), v.Description, info, v.handler)
-			switch v.Method {
-			case http.MethodGet:
-				register.GET(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			case http.MethodPost:
-				register.POST(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			case http.MethodPut:
-				register.PUT(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			case http.MethodDelete:
-				register.DELETE(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			case http.MethodHead:
-				register.HEAD(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			case http.MethodOptions:
-				register.OPTIONS(path, append([]gin.HandlerFunc{p.proxyHandler(v.handler)}, v.Middlewares...)...)
-			default:
-				err = fmt.Errorf("unsupport method: %s", v.Method)
-				return
+			for _, action := range group.Actions {
+				info := p.parseHandlerInfo(action.Handler)
+				path := info.ParsePath()
+				fullPath := strings.Join([]string{route.Prefix, group.Prefix, path}, "")
+				p.addMethod(action.method, fullPath, action.Description, info, action.handler)
+				switch action.method {
+				case http.MethodGet:
+					groupRegister.GET(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				case http.MethodPost:
+					groupRegister.POST(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				case http.MethodPut:
+					groupRegister.PUT(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				case http.MethodDelete:
+					groupRegister.DELETE(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				case http.MethodHead:
+					groupRegister.HEAD(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				case http.MethodOptions:
+					groupRegister.OPTIONS(path, append([]gin.HandlerFunc{p.proxyHandler(action.handler)}, route.Middlewares...)...)
+				default:
+					err = fmt.Errorf("action '%s' method '%s' unsupported", info.Name, action.method)
+					return
+				}
 			}
 		}
 	}
 	return
-}
-
-func (p *API) registerGroups() {
-
-}
-
-func (p *API) registerActions() {
-
 }
 
 func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
@@ -291,23 +295,6 @@ func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 		}
 	}
 }
-
-//func isBasicType(v reflect.Value) bool {
-//	for {
-//		if v.Kind() != reflect.Ptr {
-//			break
-//		}
-//		v = v.Elem()
-//	}
-//	switch v.Kind() {
-//	case reflect.String,
-//		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-//		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-//		reflect.Float32, reflect.Float64:
-//		return true
-//	}
-//	return false
-//}
 
 func realType(t reflect.Type) reflect.Type {
 	for {
