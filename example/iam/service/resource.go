@@ -2,10 +2,9 @@ package service
 
 import "github.com/utilslab/iam"
 
-// 字段权限，可读、可写（一定可读）、隐藏
 var (
-	Shop     = iam.Resource{Name: "shop", Ident: "shop/$shopId?$color&$size", Description: "店铺"}
-	Cate     = iam.Resource{Name: "cate", Ident: "cate/$cateId", Description: "分类"}
-	Good     = iam.Resource{Name: "good", Ident: "good/$goodId", Description: "货物"}
-	CateGood = iam.Resource{Name: "CateGood", Ident: "$cateId/$goodId", Description: "分类商品"}
+	Shop     = iam.Resource{Name: "shop", Ident: []iam.Field{{Var: "$shopId", Description: "店铺ID"}}, Scope: []iam.Field{{Var: "$color", Description: "颜色"}}, Description: "店铺"}
+	Cate     = iam.Resource{Name: "cate", Ident: []iam.Field{{Var: "$cateId", Description: "分类ID"}}, Description: "分类"}
+	Good     = iam.Resource{Name: "good", Ident: []iam.Field{{Var: "$goodId", Description: "商品ID"}}, Description: "货物"}
+	CateGood = iam.Resource{Name: "CateGood", Ident: []iam.Field{{Var: "$goodId", Description: "分类ID"}}, Description: "分类商品"}
 )

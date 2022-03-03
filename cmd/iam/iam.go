@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/utilslab/iam/cmd/iam/sdk"
 	"github.com/spf13/cobra"
+	"github.com/utilslab/iam/cmd/iam/sdk"
 )
 
 var rootCmd = &cobra.Command{

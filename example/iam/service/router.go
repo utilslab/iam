@@ -25,7 +25,7 @@ func (p ShopServiceRouter) Routes() []*iam.Route {
 					Name:   "商品",
 					Prefix: "/good",
 					Actions: []*iam.Action{
-						// In-> $ShopId, $CateId
+						// In -> $ShopId, $CateId
 						{Resources: []iam.Resource{Shop, Cate}, Type: iam.Read, Handler: p.service.GetShop, Description: "获取店铺", Codes: AddShopCodes},
 					},
 				},

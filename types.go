@@ -106,9 +106,15 @@ type ContextWrapper func(ctx *gin.Context) (context.Context, error)
 
 type Resource struct {
 	Name        string
-	Ident       string
+	Ident       []Field
+	Scope       []Field
 	Description string
 	optional    bool
+}
+
+type Field struct {
+	Var        string
+	Description string
 }
 
 func (r Resource) Optional() Resource {
