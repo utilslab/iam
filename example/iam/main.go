@@ -35,17 +35,6 @@ func main() {
 				Host: "http://localhost:8080",
 			},
 		},
-		//Makers: map[string]exporter.Maker{
-		//	"python": exporter.GoMaker{},
-		//},
-		//BasicTypes: []exporter.BasicType{
-		//	{
-		//		Elem: service.CID{},
-		//		Mapping: map[string]exporter.Library{
-		//			"ts": {Type: "string"},
-		//		},
-		//	},
-		//},
 	})
 	
 	api.Run(":8080")
