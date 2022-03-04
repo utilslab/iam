@@ -277,6 +277,8 @@ func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 			if e != nil {
 				log.Printf("c.Error(%s) error: %s", err, e)
 			}
+			// TODO 处理错误码逻辑
+			c.String(http.StatusBadRequest, err.Error())
 			return
 		}
 		if l == 2 {
