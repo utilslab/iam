@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/ttacon/chalk"
 	"github.com/utilslab/iam/assets"
 	"github.com/utilslab/iam/utils"
-	"github.com/ttacon/chalk"
 	"log"
 	"net/http"
 	"reflect"
@@ -178,6 +178,7 @@ func (p *Exporter) initMakers() {
 	p.makers = map[string]Maker{
 		"go":      GoMaker{},
 		"angular": AngularMaker{},
+		"umi":     UmiMaker{},
 	}
 	if p.options != nil {
 		for k, v := range p.options.Makers {

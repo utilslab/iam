@@ -59,10 +59,10 @@ func run(cmd *cobra.Command) (err error) {
 	if err != nil {
 		return
 	}
-	if pkg == "" {
-		err = fmt.Errorf("请通过 --package 选项指定 SDK 包名称, 如 --package foo-sdk")
-		return
-	}
+	//if pkg == "" {
+	//	err = fmt.Errorf("请通过 --package 选项指定 SDK 包名称, 如 --package foo-sdk")
+	//	return
+	//}
 	yes, err := cmd.Flags().GetBool("yes")
 	if err != nil {
 		return
