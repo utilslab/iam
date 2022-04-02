@@ -1,4 +1,4 @@
-module github.com/utilslab/pam
+module github.com/utilslab/iam
 
 go 1.16
 
