@@ -23,6 +23,12 @@ go get -u github.com/utilslab/iam
 go get -u github.com/utilslab/iam/cmd/iam
 ```
 
+1.18 命令行安装
+
+```
+go install github.com/utilslab/iam/cmd/iam@latest
+```
+
 ## 快速上手
 
 参考 Foo 用例，[查看源码](https://github.com/koyeo/buck/tree/master/example/foo)。
