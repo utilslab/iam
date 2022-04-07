@@ -179,6 +179,7 @@ func (p *Exporter) initMakers() {
 		"go":      GoMaker{},
 		"angular": AngularMaker{},
 		"umi":     UmiMaker{},
+		"axios":   AxiosMaker{},
 	}
 	if p.options != nil {
 		for k, v := range p.options.Makers {
@@ -206,7 +207,7 @@ func (p *Exporter) ReflectFields(name, param, label string, validator *Validator
 		field.Type = p.getType(t)
 	}
 	field.Validator = validator
-	
+
 	if t.Kind() == reflect.Struct && basicType == nil {
 		field.Struct = true
 		for i := 0; i < t.NumField(); i++ {
