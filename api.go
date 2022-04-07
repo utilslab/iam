@@ -57,15 +57,13 @@ func (p *API) SetExporter(addr string, options *exporter.Options) {
 			},
 		},
 		{
-			Elem:
-			Html(""),
+			Elem: Html(""),
 			Mapping: map[string]exporter.Library{
 				"ts": {Type: "string"},
 			},
 		},
 		{
-			Elem:
-			Text(""),
+			Elem: Text(""),
 			Mapping: map[string]exporter.Library{
 				"ts": {Type: "string"},
 			},
@@ -269,7 +267,7 @@ func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 		} else {
 			out = handler.Call([]reflect.Value{reflect.ValueOf(ctx)})
 		}
-		
+
 		l := len(out)
 		if !out[l-1].IsNil() {
 			err := out[l-1].Interface().(error)
