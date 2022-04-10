@@ -103,6 +103,7 @@ type Value struct {
 }
 
 type ContextWrapper func(ctx *gin.Context) (context.Context, error)
+type ErrorWrapper func(ctx *gin.Context, err error)
 
 type Resource struct {
 	Name        string
@@ -113,7 +114,7 @@ type Resource struct {
 }
 
 type Field struct {
-	Var        string
+	Var         string
 	Description string
 }
 

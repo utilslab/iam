@@ -7,7 +7,6 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/utilslab/iam/binding"
 	"github.com/utilslab/iam/exporter"
-	"log"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -29,6 +28,7 @@ type API struct {
 	methods        []*exporter.Method
 	basics         *exporter.BasicTypes
 	models         *exporter.Fields
+	errorWrapper   ErrorWrapper
 	contextWrapper ContextWrapper
 }
 
@@ -46,6 +46,10 @@ func (p *API) SetEngine(engine *gin.Engine) {
 
 func (p *API) SetContextWrapper(contextWrapper ContextWrapper) {
 	p.contextWrapper = contextWrapper
+}
+
+func (p *API) SetErrorWrapper(errorWrapper ErrorWrapper) {
+	p.errorWrapper = errorWrapper
 }
 
 func (p *API) SetExporter(addr string, options *exporter.Options) {
@@ -239,28 +243,29 @@ func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var out []reflect.Value
 		var ctx context.Context
+		var err error
+		defer func() {
+			if err != nil {
+				if p.errorWrapper != nil {
+					p.errorWrapper(c, err)
+				} else {
+					c.String(http.StatusBadRequest, err.Error())
+				}
+			}
+			return
+		}()
 		if p.contextWrapper == nil {
 			ctx = context.Background()
 		} else {
-			var err error
 			ctx, err = p.contextWrapper(c)
 			if err != nil {
-				e := c.Error(err)
-				if e != nil {
-					log.Printf("c.Error(%s) error: %s", err, e)
-				}
 				return
 			}
 		}
 		if handler.Type().NumIn() == 2 {
 			var in reflect.Value
-			var err error
 			in, err = bind(c, handler.Type().In(1))
 			if err != nil {
-				e := c.Error(err)
-				if e != nil {
-					log.Printf("c.Error(%s) error: %s", err, e)
-				}
 				return
 			}
 			out = handler.Call([]reflect.Value{reflect.ValueOf(ctx), in})
@@ -270,13 +275,7 @@ func (p *API) proxyHandler(handler reflect.Value) gin.HandlerFunc {
 
 		l := len(out)
 		if !out[l-1].IsNil() {
-			err := out[l-1].Interface().(error)
-			e := c.Error(err)
-			if e != nil {
-				log.Printf("c.Error(%s) error: %s", err, e)
-			}
-			// TODO 处理错误码逻辑
-			c.String(http.StatusBadRequest, err.Error())
+			err = out[l-1].Interface().(error)
 			return
 		}
 		if l == 2 {
