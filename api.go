@@ -356,10 +356,10 @@ func (p *API) addMethod(method, path, description string, info HandlerInfo, hand
 		Description: description,
 	}
 	if handler.Type().NumIn() > 1 {
-		m.Input = p.exporter.ReflectFields("", "", "", nil, handler.Type().In(1))
+		m.Input = p.exporter.ReflectFields("", "", "", nil, nil, handler.Type().In(1))
 	}
 	if handler.Type().NumOut() > 1 {
-		m.Output = p.exporter.ReflectFields("", "", "", nil, handler.Type().Out(0))
+		m.Output = p.exporter.ReflectFields("", "", "", nil, nil, handler.Type().Out(0))
 	}
 	p.methods = append(p.methods, m)
 }

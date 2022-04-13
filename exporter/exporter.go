@@ -189,7 +189,7 @@ func (p *Exporter) initMakers() {
 }
 
 // ReflectFields 反射转换输入输出的字段信息
-func (p *Exporter) ReflectFields(name, param, label string, validator *Validator, t reflect.Type) (field *Field) {
+func (p *Exporter) ReflectFields(name, param, label string, validator *Validator, pt, t reflect.Type) (field *Field) {
 	t = utils.TypeElem(t)
 	field = new(Field)
 	field.Name = name
@@ -211,25 +211,44 @@ func (p *Exporter) ReflectFields(name, param, label string, validator *Validator
 	if t.Kind() == reflect.Struct && basicType == nil {
 		field.Struct = true
 		for i := 0; i < t.NumField(); i++ {
-			sf := t.Field(i)
-			_name := sf.Name
-			_param := p.getParam(sf)
-			_label := p.getFieldLabel(sf)
-			_validator := p.getFieldValidator(sf)
-			_field := p.ReflectFields(_name, _param, _label, _validator, sf.Type)
-			if _field.Struct || _field.Nested {
-				field.Nested = true
+			f := t.Field(i)
+			_elem := utils.TypeElem(f.Type)
+			_name := f.Name
+			_param := p.getParam(f)
+			_label := p.getFieldLabel(f)
+			_validator := p.getFieldValidator(f)
+			var _field *Field
+			if !elemEquals(pt, t) {
+				_field = p.ReflectFields(_name, _param, _label, _validator, t, _elem)
+				if _field.Struct || _field.Nested {
+					field.Nested = true
+				}
+			} else {
+				_field = new(Field)
+				_field.Name = field.Name
 			}
 			field.Fields = append(field.Fields, _field)
 		}
 	} else if t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
 		field.Array = true
-		field.Elem = p.ReflectFields("", "", label, validator, t.Elem())
-		if field.Elem.Struct || field.Elem.Nested {
-			field.Nested = true
+		elem := utils.TypeElem(t.Elem())
+		if !elemEquals(pt, t) {
+			field.Elem = p.ReflectFields("", "", label, validator, pt, elem)
+			if field.Elem.Struct || field.Elem.Nested {
+				field.Nested = true
+			}
 		}
 	}
 	return
+}
+
+// 用于子字段是否与父类型形成递归
+func elemEquals(pt, t reflect.Type) bool {
+	if pt == nil {
+		return false
+	}
+	// 在使用的上下文中将 pt,t 都转为了非指针类型，故此不做判断
+	return pt.String() == t.String() && pt.PkgPath() == t.PkgPath()
 }
 
 func (p Exporter) getBasicType(t reflect.Type) *BasicType {
