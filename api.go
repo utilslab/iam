@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func New() *API {
@@ -58,6 +59,18 @@ func (p *API) SetExporter(addr string, options *exporter.Options) {
 			Elem: decimal.Decimal{},
 			Mapping: map[string]exporter.Library{
 				"ts": {Type: "string"},
+			},
+		},
+		{
+			Elem: time.Time{},
+			Mapping: map[string]exporter.Library{
+				"ts": {Type: "string"},
+			},
+		},
+		{
+			Elem: time.Duration(0),
+			Mapping: map[string]exporter.Library{
+				"ts": {Type: "number"},
 			},
 		},
 		{

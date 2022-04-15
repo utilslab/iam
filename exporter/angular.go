@@ -8,12 +8,12 @@ type AngularMaker struct {
 var TsTyper Typer = func(s string, isStruct, isArray bool) string {
 	if isArray {
 		if !isStruct {
-			s = typescriptTypeConverter(s)
+			s = typescriptTypeConverter(nil, s)
 		}
 		return fmt.Sprintf("%s[]", s)
 	}
 	if !isStruct {
-		s = typescriptTypeConverter(s)
+		s = typescriptTypeConverter(nil, s)
 	}
 	return s
 }

@@ -147,7 +147,7 @@ func (p Exporter) toTsProtocolFieldType(field *Field) {
 		return
 	}
 	field.Origin = field.Type
-	field.Type = tsProtocolTypeConverter(field.Type)
+	field.Type = typescriptTypeConverter(field.BasicType, field.Type)
 	for _, v := range field.Fields {
 		p.toTsProtocolFieldType(v)
 	}
@@ -160,7 +160,7 @@ func (p *Exporter) initBasicTypes() {
 	if p.options == nil {
 		return
 	}
-	basicTypes := []BasicType{}
+	basicTypes := make([]BasicType, 0)
 	basicTypes = append(basicTypes, p.options.BasicTypes...)
 	for _, v := range basicTypes {
 		if p.basics == nil {
@@ -226,8 +226,14 @@ func (p *Exporter) ReflectFields(name, param, label string, validator *Validator
 			} else {
 				_field = new(Field)
 				_field.Name = field.Name
+				_field.Type = "nested"
+				//_field.Origin = field.Origin
+				//_field.Param = _param
 			}
-			field.Fields = append(field.Fields, _field)
+			// 忽略 json:"-"
+			if _field.Param != "-" {
+				field.Fields = append(field.Fields, _field)
+			}
 		}
 	} else if t.Kind() == reflect.Slice || t.Kind() == reflect.Array {
 		field.Array = true
@@ -237,6 +243,8 @@ func (p *Exporter) ReflectFields(name, param, label string, validator *Validator
 			if field.Elem.Struct || field.Elem.Nested {
 				field.Nested = true
 			}
+		} else {
+			field.Type = "nested"
 		}
 	}
 	return
