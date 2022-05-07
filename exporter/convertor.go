@@ -14,6 +14,8 @@ func typescriptTypeConverter(bt *BasicType, o string) string {
 		return "boolean"
 	case "string", "decimal.Decimal":
 		return "string"
+	case "interface {}":
+		return "any"
 	default:
 		if bt != nil && bt.Mapping != nil {
 			if v, ok := bt.Mapping["ts"]; ok {

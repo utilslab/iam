@@ -48,7 +48,7 @@ export async function {{ method.Name }}({% if method.InputType !='' %}params: AP
 		headers: {
 			'Content-Type': 'application/json',
 		},
-		data: params,
+		{% if method.InputType !='' %}data: params,{% endif %}
 		...(options || {}),
 	}){% endif %}
 }
